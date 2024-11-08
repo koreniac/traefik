@@ -1,0 +1,43 @@
+## STATIC CONFIGURATION
+log:
+  level: DEBUG
+
+api:
+  insecure: true
+  dashboard: true
+
+entryPoints:
+  web:
+    address: ":80"
+  n8n:
+    address: ":5678"
+  https:
+    address: ":443"
+  chat:
+    address: ":8053"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+  file:
+    filename: "traefik.yml"
+## DYNAMIC CONFIGURATION
+http:
+  routers:
+    route-to-local-ip:
+      # rule: "Host(`test.example.com`) && PathPrefix(`/chat`)"
+      rule: "Host(`13.212.219.219`)"
+      service: route-to-local-ip-service
+      priority: 1000
+      entryPoints:
+        # - chat
+        - web
+
+  services:
+    route-to-local-ip-service:
+      loadBalancer:
+        servers:
+          - url: "http://13.212.219.219:5678"
+          - passHostHeader: true
+          - insecureSkipVerify: true
